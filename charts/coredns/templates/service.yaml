@@ -1,7 +1,11 @@
+{{- $maySplit := .Values.serviceType | default "" | eq "LoadBalancer" | and (default true .Values.service.splitLoadBalancer)}}
+{{- $tcpPorts := and $maySplit (merge (dict "tcpOnly" true) . | include "coredns.servicePorts") -}}
+{{- $udpPorts := and $maySplit (merge (dict "udpOnly" true) . | include "coredns.servicePorts") -}}
+{{- $shouldSplit := and $tcpPorts $udpPorts | or false | and $maySplit | not | not -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "coredns.fullname" . }}
+  name: {{ template "coredns.fullname" . }}{{ ternary "-tcp" "" $shouldSplit }}
   labels:
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
@@ -34,5 +38,50 @@ spec:
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{- end }}
   ports:
+  {{- if $shouldSplit }}
+{{ $tcpPorts | indent 2 -}}
+  {{- else }}
 {{ include "coredns.servicePorts" . | indent 2 -}}
+  {{- end -}}
   type: {{ default "ClusterIP" .Values.serviceType }}
+---
+{{- if $shouldSplit }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "coredns.fullname" . }}-udp
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    {{- if .Values.isClusterService }}
+    k8s-app: {{ .Chart.Name | quote }}
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "CoreDNS"
+    {{- end }}
+    app.kubernetes.io/name: {{ template "coredns.name" . }}
+{{- if .Values.customLabels }}
+{{ toYaml .Values.customLabels | indent 4 }}
+{{- end }}
+  annotations:
+{{ toYaml .Values.service.annotations | indent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    {{- if .Values.isClusterService }}
+    k8s-app: {{ .Chart.Name | quote }}
+    {{- end }}
+    app.kubernetes.io/name: {{ template "coredns.name" . }}
+  {{- if .Values.service.clusterIP }}
+  clusterIP: {{ .Values.service.clusterIP }}
+  {{- end }}
+  {{- if .Values.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
+  {{- end }}
+  {{- if .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
+  ports:
+{{ $udpPorts | indent 2 -}}
+  type: {{ default "ClusterIP" .Values.serviceType }}
+{{- end }}

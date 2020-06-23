@@ -23,6 +23,9 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 Generate the list of ports automatically from the server definitions
 */}}
 {{- define "coredns.servicePorts" -}}
+    {{/* Bring modality into top-level scope */}}
+    {{- $listTcp := not .udpOnly -}}
+    {{- $listUdp := not .tcpOnly -}}
     {{/* Set ports to be an empty dict */}}
     {{- $ports := dict -}}
     {{/* Iterate through each of the server blocks */}}
@@ -69,11 +72,11 @@ Generate the list of ports automatically from the server definitions
 
     {{/* Write out the ports according to the info collected above */}}
     {{- range $port, $innerdict := $ports -}}
-        {{- if index $innerdict "isudp" -}}
-            {{- printf "- {port: %v, protocol: UDP, name: udp-%s}\n" $port $port -}}
+        {{- if and (index $innerdict "isudp") $listUdp -}}
+            {{- printf "- {containerPort: %v, protocol: UDP, name: udp-%s}\n" $port $port -}}
         {{- end -}}
-        {{- if index $innerdict "istcp" -}}
-            {{- printf "- {port: %v, protocol: TCP, name: tcp-%s}\n" $port $port -}}
+        {{- if and (index $innerdict "istcp") $listTcp -}}
+            {{- printf "- {containerPort: %v, protocol: TCP, name: tcp-%s}\n" $port $port -}}
         {{- end -}}
     {{- end -}}
 {{- end -}}
