@@ -1,0 +1,9 @@
+dependencies:
+- name: etcd
+  repository: https://charts.bitnami.com/bitnami
+  version: 4.8.4
+- name: external-dns
+  repository: https://charts.bitnami.com/bitnami
+  version: 3.2.1
+digest: sha256:cabc0197cc7a314346a269e58fc36e067541d532b33277df8a26bfe7b74b1f58
+generated: "2020-06-22T23:02:39.920094181-07:00"

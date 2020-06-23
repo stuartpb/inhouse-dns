@@ -1,0 +1,22 @@
+apiVersion: 2
+name: inhouse-dns
+version: 0.0.0
+# kubeVersion: A SemVer range of compatible Kubernetes versions (optional)
+description: A DNS server that encrypts lookups and serves internal names
+type: application
+# keywords:
+#  - A list of keywords about this project (optional)
+# home: The URL of this projects home page (optional)
+sources:
+  - https://github.com/stuartpb/inhouse-dns
+dependencies:
+  - name: etcd
+    version: 4.8.4
+    repository: https://charts.bitnami.com/bitnami
+  - name: external-dns
+    version: 3.2.1
+    repository: https://charts.bitnami.com/bitnami
+maintainers:
+  - name: Stuart P. Bentley
+    email: s@stuartpb.com
+    url: https://stuartpb.com/
