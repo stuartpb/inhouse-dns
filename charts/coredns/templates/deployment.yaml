@@ -87,7 +87,8 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         ports:
-{{ include "coredns.containerPorts" . | indent 8 }}
+        - {containerPort: 53, protocol: UDP, name: udp-53}
+        - {containerPort: 53, protocol: TCP, name: tcp-53}
         livenessProbe:
           httpGet:
             path: /health

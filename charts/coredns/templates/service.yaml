@@ -1,7 +1,4 @@
-{{- $maySplit := .Values.serviceType | default "" | eq "LoadBalancer" | and (default true .Values.service.splitLoadBalancer)}}
-{{- $tcpPorts := and $maySplit (set (pick . "Values") "tcpOnly" true | include "coredns.servicePorts") -}}
-{{- $udpPorts := and $maySplit (set (pick . "Values") "udpOnly" true | include "coredns.servicePorts") -}}
-{{- $shouldSplit := $maySplit | and (or (and $tcpPorts $udpPorts) false) -}}
+{{- $shouldSplit := .Values.serviceType | default "" | eq "LoadBalancer" | and (default true .Values.service.splitLoadBalancer) }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -38,11 +35,10 @@ spec:
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{- end }}
   ports:
-  {{- if $shouldSplit }}
-{{ $tcpPorts | indent 2 -}}
-  {{- else }}
-{{ include "coredns.servicePorts" . | indent 2 -}}
-  {{- end -}}
+  - {containerPort: 53, protocol: TCP, name: tcp-53}
+  {{- if not $shouldSplit }}
+  - {containerPort: 53, protocol: UDP, name: udp-53}
+  {{- end }}
   type: {{ default "ClusterIP" .Values.serviceType }}
 ---
 {{- if $shouldSplit }}
@@ -82,6 +78,6 @@ spec:
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{- end }}
   ports:
-{{ $udpPorts | indent 2 -}}
+  - {containerPort: 53, protocol: UDP, name: udp-53}
   type: {{ default "ClusterIP" .Values.serviceType }}
 {{- end }}

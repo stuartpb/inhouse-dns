@@ -14,17 +14,15 @@ metadata:
     app.kubernetes.io/name: {{ template "coredns.name" . }}
 data:
   Corefile: |-
-    {{ range .Values.servers }}
-    {{- range $idx, $zone := .zones }}{{ if $idx }} {{ else }}{{ end }}{{ default "" $zone.scheme }}{{ default "." $zone.zone }}{{ else }}.{{ end -}}
-    {{- if .port }}:{{ .port }} {{ end -}}
-    {
-      {{- range .plugins }}
-        {{ .name }}{{ if .parameters }} {{ .parameters }}{{ end }}{{ if .configBlock }} {
-{{ .configBlock | indent 12 }}
-        }{{ end }}
+    .:53 {
+{{ .Values.preConfigBlock | indent 8 }}
+        etcd {{ .Values.internalZone| default "." }} {
+            path /skydns
+            endpoint http://{{ .Release.Name }}-etcd.{{ .Release.Namespace }}.svc.cluster.local:2379
+        }
+      {{- if .Values.prometheus.service.enabled }}
+        prometheus 0.0.0.0:9153
       {{- end }}
+        forward .{{ range .Values.forwardingServers }} {{ . }}{{ end }}
+{{ .Values.postConfigBlock | indent 8 }}
     }
-    {{ end }}
-  {{- range .Values.zoneFiles }}
-  {{ .filename }}: {{ toYaml .contents | indent 4 }}
-  {{- end }}
