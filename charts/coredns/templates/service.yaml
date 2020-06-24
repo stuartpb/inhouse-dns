@@ -1,7 +1,7 @@
 {{- $maySplit := .Values.serviceType | default "" | eq "LoadBalancer" | and (default true .Values.service.splitLoadBalancer)}}
-{{- $tcpPorts := and $maySplit (merge (dict "tcpOnly" true) . | include "coredns.servicePorts") -}}
-{{- $udpPorts := and $maySplit (merge (dict "udpOnly" true) . | include "coredns.servicePorts") -}}
-{{- $shouldSplit := and $tcpPorts $udpPorts | or false | and $maySplit | not | not -}}
+{{- $tcpPorts := and $maySplit (set (pick . "Values") "tcpOnly" true | include "coredns.servicePorts") -}}
+{{- $udpPorts := and $maySplit (set (pick . "Values") "udpOnly" true | include "coredns.servicePorts") -}}
+{{- $shouldSplit := $maySplit | and (or (and $tcpPorts $udpPorts) false) -}}
 apiVersion: v1
 kind: Service
 metadata:
