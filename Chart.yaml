@@ -1,6 +1,6 @@
 apiVersion: 2
 name: inhouse-dns
-version: 0.0.0
+version: 0.1.0
 # kubeVersion: A SemVer range of compatible Kubernetes versions (optional)
 description: A DNS server that encrypts lookups and serves internal names
 type: application
