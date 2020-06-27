@@ -6,11 +6,6 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
-    {{- if .Values.isClusterService }}
-    k8s-app: {{ .Chart.Name | quote }}
-    kubernetes.io/cluster-service: "true"
-    kubernetes.io/name: "CoreDNS"
-    {{- end }}
     app.kubernetes.io/name: {{ template "coredns.name" . }}
 data:
   Corefile: |-

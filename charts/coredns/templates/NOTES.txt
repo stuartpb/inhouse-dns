@@ -1,6 +1,3 @@
-{{- if .Values.isClusterService }}
-CoreDNS is now running in the cluster as a cluster-service.
-{{- else }}
 CoreDNS is now running in the cluster.
 It can be accessed using the below endpoint
 {{- if contains "NodePort" .Values.serviceType }}
@@ -16,7 +13,6 @@ It can be accessed using the below endpoint
 {{- else if contains "ClusterIP"  .Values.serviceType }}
     "{{ template "coredns.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
     from within the cluster
-{{- end }}
 {{- end }}
 
 It can be tested with the following:

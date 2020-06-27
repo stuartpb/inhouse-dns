@@ -6,11 +6,6 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
     helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
-    {{- if .Values.isClusterService }}
-    k8s-app: {{ .Chart.Name | quote }}
-    kubernetes.io/cluster-service: "true"
-    kubernetes.io/name: "CoreDNS"
-    {{- end }}
     app.kubernetes.io/name: {{ template "coredns.name" . }}
 {{- if .Values.customLabels }}
 {{ toYaml .Values.customLabels | indent 4 }}
@@ -27,16 +22,10 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      {{- if .Values.isClusterService }}
-      k8s-app: {{ .Chart.Name | quote }}
-      {{- end }}
       app.kubernetes.io/name: {{ template "coredns.name" . }}
   template:
     metadata:
       labels:
-        {{- if .Values.isClusterService }}
-        k8s-app: {{ .Chart.Name | quote }}
-        {{- end }}
         app.kubernetes.io/name: {{ template "coredns.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name | quote }}
 {{- if .Values.customLabels }}
@@ -44,17 +33,10 @@ spec:
 {{- end }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        {{- if .Values.isClusterService }}
-        scheduler.alpha.kubernetes.io/critical-pod: ''
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
-        {{- end }}
     spec:
-      serviceAccountName: {{ template "coredns.serviceAccountName" . }}
+      serviceAccountName: {{ default "default" .Values.serviceAccount.name }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName | quote }}
-      {{- end }}
-      {{- if .Values.isClusterService }}
-      dnsPolicy: Default
       {{- end }}
       {{- if .Values.affinity }}
       affinity:
