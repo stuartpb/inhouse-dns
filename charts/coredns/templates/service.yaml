@@ -27,9 +27,9 @@ spec:
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{- end }}
   ports:
-  - {containerPort: 53, protocol: TCP, name: tcp-53}
+  - {port: 53, protocol: TCP, name: tcp-53}
   {{- if not $shouldSplit }}
-  - {containerPort: 53, protocol: UDP, name: udp-53}
+  - {port: 53, protocol: UDP, name: udp-53}
   {{- end }}
   type: {{ default "ClusterIP" .Values.serviceType }}
 ---
@@ -62,6 +62,6 @@ spec:
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{- end }}
   ports:
-  - {containerPort: 53, protocol: UDP, name: udp-53}
+  - {port: 53, protocol: UDP, name: udp-53}
   type: {{ default "ClusterIP" .Values.serviceType }}
 {{- end }}
